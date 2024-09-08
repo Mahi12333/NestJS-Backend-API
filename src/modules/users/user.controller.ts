@@ -15,4 +15,14 @@ export class UserController {
       throw new BadRequestException(error.message);
     }
   }
+
+  @Post('login')
+  async userLogin(@Body() userRegistrationDto: UserRegistrationDto) {
+    try {
+      return await this.userService.userLogin(userRegistrationDto);
+    } catch (error) {
+       // console.log(error)
+      throw new BadRequestException(error.message);
+    }
+  }
 }

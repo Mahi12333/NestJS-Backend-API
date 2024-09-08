@@ -62,4 +62,41 @@ export class UserService {
       throw new BadRequestException('Unable to Register');
     }
   }
+
+  async userLogin(userRegistrationDto: UserRegistrationDto): Promise<any> {
+    const { email, password} = userRegistrationDto;
+   // console.log(name)
+     // Check if all required fields are provided
+     if (!email || !password) {
+        throw new BadRequestException('All fields are required');
+      }
+    
+    // Check if user already exists
+    const User = await this.userModel.findOne({ email });
+    // console.log(User)
+    if (!User) {
+      throw new BadRequestException('Please do registration first');
+    }
+    
+    const matchPass = await bcrypt.compare(password, User.password);
+    if(!matchPass){
+      throw new BadRequestException('Password not match');
+    }
+
+    try {
+      // Hash the password
+      
+      const token = jwt.sign({ userID: User._id }, process.env.JWT_SECRET_KEY, {
+        expiresIn: '5d',
+      });
+      //console.log(token)
+      // Return success response
+      return {
+        message: 'Login successful',
+        token,
+      };
+    } catch (error) {
+      throw new BadRequestException('Unable to Login');
+    }
+  }
 }
