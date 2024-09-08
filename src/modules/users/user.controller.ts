@@ -38,4 +38,7 @@ export class UserController {
       return res.status(error.response?.statusCode || 500).json(ApiResponseUtil.error(error.message, error.response?.statusCode || 500));
     }
   }
+
+  
+
 }
