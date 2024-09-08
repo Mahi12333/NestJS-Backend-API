@@ -15,7 +15,7 @@ export class UserService {
    // console.log(name)
      // Check if all required fields are provided
      if (!name || !email || !password || !password_confirmation || tc === undefined) {
-        throw new BadRequestException('All fields are required');
+        throw new BadRequestException('All fields are requireds');
       }
     
     // Check if user already exists
