@@ -1,10 +1,13 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { User } from './schema/user.schema';
 import { UserRegistrationDto } from './dto/user-registration.dto';
+import {ApiResponseUtil } from '../../common/utils/api-response.util';
+import { ChangePasswordDto } from './dto/user-change-password.dto';
+
 console.log(User.name);
 @Injectable()
 export class UserService {
@@ -97,6 +100,38 @@ export class UserService {
       };
     } catch (error) {
       throw new BadRequestException('Unable to Login');
+    }
+  }
+
+  async changeUserPassword(ChangePasswordDto: ChangePasswordDto): Promise<any> {
+    const { id, password, password_confirmation } = ChangePasswordDto;
+
+    if (!password || !password_confirmation) {
+      throw new BadRequestException(ApiResponseUtil.error('All fields are required'));
+    }
+
+    try {
+      const user = await this.userModel.findOne({ _id: new Types.ObjectId(id) });
+     console.log(user)
+      if (!user) {
+        throw new BadRequestException(ApiResponseUtil.error('User not found'));
+      }
+
+      if (password !== password_confirmation) {
+        throw new BadRequestException(ApiResponseUtil.error("New Password and Confirm New Password don't match"));
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const newHashPassword = await bcrypt.hash(password, salt);
+
+      await this.userModel.findByIdAndUpdate(user.id, {
+        $set: { password: newHashPassword },
+      });
+
+      return ApiResponseUtil.success('Password changed successfully');
+      
+    } catch (error) {
+      throw new BadRequestException(ApiResponseUtil.error('Something went wrong!'));
     }
   }
 }
